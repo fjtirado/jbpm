@@ -121,23 +121,33 @@ public interface RuntimeDataService {
      */
     Collection<ProcessInstanceDesc> getProcessInstancesByDeploymentId(String deploymentId, List<Integer> states, QueryContext queryContext);
 
+    default ProcessInstanceDesc getProcessInstanceById(long processInstanceId) {
+        return getProcessInstanceById(processInstanceId, null);
+    }
+
     /**
      * Returns process instance descriptions found for given processInstanceId if found otherwise null. At the same time it will
      * fetch all active tasks (in status: Ready, Reserved, InProgress) to provide information what user task is keeping instance
      * and who owns them (if were already claimed).
      * @param processInstanceId The id of the process instance to be fetched
+     * @param containedId id of the container this process belongs to
      * @return Process instance information, in the form of a {@link ProcessInstanceDesc} instance.
      */
-    ProcessInstanceDesc getProcessInstanceById(long processInstanceId);
+    ProcessInstanceDesc getProcessInstanceById(long processInstanceId, String containedId);
+
+    default ProcessInstanceDesc getProcessInstanceByCorrelationKey(CorrelationKey correlationKey) {
+        return getProcessInstanceByCorrelationKey(correlationKey, null);
+    }
 
     /**
      * Returns active process instance description found for given correlation key if found otherwise null. At the same time it will
      * fetch all active tasks (in status: Ready, Reserved, InProgress) to provide information what user task is keeping instance
      * and who owns them (if were already claimed).
      * @param correlationKey correlation key assigned to process instance
+     * @param containedId id of the container this process belongs to 
      * @return Process instance information, in the form of a {@link ProcessInstanceDesc} instance.
      */
-    ProcessInstanceDesc getProcessInstanceByCorrelationKey(CorrelationKey correlationKey);
+    ProcessInstanceDesc getProcessInstanceByCorrelationKey(CorrelationKey correlationKey, String containerId);
 
     /**
      * Returns process instances descriptions (regardless of their states) found for given correlation key if found otherwise empty list.
@@ -217,50 +227,101 @@ public interface RuntimeDataService {
      */
     NodeInstanceDesc getNodeInstanceForWorkItem(Long workItemId);
 
+    default Collection<NodeInstanceDesc> getProcessInstanceHistoryActive(long processInstanceId,
+                                                                         QueryContext queryContext) {
+        return getProcessInstanceHistoryActive(processInstanceId, null, queryContext);
+    }
+
     /**
      * Returns trace of all active nodes for given process instance id
      * @param processInstanceId unique identifier of process instance
+     * @param container Id id of the container
      * @param queryContext control parameters for the result e.g. sorting, paging
      * @return
      */
-    Collection<NodeInstanceDesc> getProcessInstanceHistoryActive(long processInstanceId, QueryContext queryContext);
+    Collection<NodeInstanceDesc> getProcessInstanceHistoryActive(long processInstanceId,
+                                                                 String containerId,
+                                                                 QueryContext queryContext);
+
+    default Collection<NodeInstanceDesc> getProcessInstanceHistoryCompleted(long processInstanceId,
+                                                                            QueryContext queryContext) {
+        return getProcessInstanceHistoryCompleted(processInstanceId, null, queryContext);
+    }
 
     /**
      * Returns trace of all executed (completed) for given process instance id
      * @param processInstanceId unique identifier of process instance
+     * @param container Id id of the container
      * @param queryContext control parameters for the result e.g. sorting, paging
      * @return
      */
-    Collection<NodeInstanceDesc> getProcessInstanceHistoryCompleted(long processInstanceId, QueryContext queryContext);
+    Collection<NodeInstanceDesc> getProcessInstanceHistoryCompleted(long processInstanceId,
+                                                                    String containerId,
+                                                                    QueryContext queryContext);
+
+    default Collection<NodeInstanceDesc> getProcessInstanceFullHistory(long processInstanceId,
+                                                                       QueryContext queryContext) {
+        return getProcessInstanceFullHistory(processInstanceId, null, queryContext);
+    }
 
     /**
      * Returns complete trace of all executed (completed) and active nodes for given process instance id
      * @param processInstanceId The id of the process used to start the process instance.
+     * @param container Id id of the container
      * @param queryContext control parameters for the result e.g. sorting, paging
      * @return The {@link NodeInstance} information, in the form of a list of {@link NodeInstanceDesc} instances,
      *         that comes from a process instance that matches the given criteria (deploymentId, processId).
      */
-    Collection<NodeInstanceDesc> getProcessInstanceFullHistory(long processInstanceId, QueryContext queryContext);
+    Collection<NodeInstanceDesc> getProcessInstanceFullHistory(long processInstanceId,
+                                                               String containerId,
+                                                               QueryContext queryContext);
+
+    default Collection<NodeInstanceDesc> getProcessInstanceFullHistoryByType(long processInstanceId,
+                                                                             EntryType type,
+                                                                             QueryContext queryContext) {
+        return getProcessInstanceFullHistoryByType(processInstanceId, null, type, queryContext);
+    }
 
     /**
      * Returns complete trace of all events of given type (START, END, ABORTED, SKIPPED, OBSOLETE or ERROR) for given process instance.
      * @param processInstanceId The id of the process used to start the process instance.
+     * @param container Id id of the container
      * @param queryContext control parameters for the result e.g. sorting, paging
      * @param type type of events that shall be returned (START, END, ABORTED, SKIPPED, OBSOLETE or ERROR) - to return all use {@link #getProcessInstanceFullHistory(long, QueryContext)}
      * @return collection of node instance descriptions
      */
-    Collection<NodeInstanceDesc> getProcessInstanceFullHistoryByType(long processInstanceId, EntryType type, QueryContext queryContext);
+    Collection<NodeInstanceDesc> getProcessInstanceFullHistoryByType(long processInstanceId,
+                                                                     String containerId,
+                                                                     EntryType type,
+                                                                     QueryContext queryContext);
 
+
+    default Collection<NodeInstanceDesc> getNodeInstancesByNodeType(long processInstanceId,
+                                                                    List<String> nodeTypes,
+                                                                    QueryContext queryContext) {
+        return getNodeInstancesByNodeType(processInstanceId, null, nodeTypes, queryContext);
+    }
 
     /**
      * Returns trace of all nodes for a given node types and process instance id
      * @param processInstanceId unique identifier of process instance
+     * @param container Id id of the container
      * @param nodeTypes list of node types to filter nodes of process instance
      * @param queryContext control parameters for the result e.g. sorting, paging
      * @return collection of node instance descriptions
      */
-    Collection<NodeInstanceDesc> getNodeInstancesByNodeType(long processInstanceId, List<String> nodeTypes, QueryContext queryContext);
-    
+    Collection<NodeInstanceDesc> getNodeInstancesByNodeType(long processInstanceId,
+                                                            String containerId,
+                                                            List<String> nodeTypes,
+                                                            QueryContext queryContext);
+
+    default Collection<NodeInstanceDesc> getNodeInstancesByCorrelationKeyNodeType(CorrelationKey correlationKey,
+                                                                                  List<Integer> states,
+                                                                                  List<String> nodeTypes,
+                                                                                  QueryContext queryContext) {
+        return getNodeInstancesByCorrelationKeyNodeType(correlationKey, null, states, nodeTypes, queryContext);
+    }
+
     /**
      * Returns trace of all nodes for a given node types and correlation key
      * @param correlationKey correlation key
@@ -269,16 +330,31 @@ public interface RuntimeDataService {
      * @param queryContext control parameters for the result e.g. sorting, paging
      * @return collection of node instance descriptions
      */
-    Collection<NodeInstanceDesc> getNodeInstancesByCorrelationKeyNodeType(CorrelationKey correlationKey,  List<Integer> states, List<String> nodeTypes, QueryContext queryContext);
+    Collection<NodeInstanceDesc> getNodeInstancesByCorrelationKeyNodeType(CorrelationKey correlationKey,
+                                                                          String containerId,
+                                                                          List<Integer> states,
+                                                                          List<String> nodeTypes,
+                                                                          QueryContext queryContext);
     
-    
+
+    default Collection<VariableDesc> getVariablesCurrentState(long processInstanceId) {
+        return getVariablesCurrentState(processInstanceId, null);
+    }
+
     /**
      * Returns collections of all process variables current value for given process instance
      * @param processInstanceId The process instance id.
+     * @param container Id id of the container
      * @return Information about variables in the specified process instance,
      *         represented by a list of {@link VariableDesc} instances.
      */
-    Collection<VariableDesc> getVariablesCurrentState(long processInstanceId);
+    Collection<VariableDesc> getVariablesCurrentState(long processInstanceId, String containerId);
+
+    default Collection<VariableDesc> getVariableHistory(long processInstanceId,
+                                                        String variableId,
+                                                        QueryContext queryContext) {
+        return getVariableHistory(processInstanceId, null, variableId, queryContext);
+    }
 
     /**
      * Returns collection of changes to given variable within scope of process instance
@@ -288,7 +364,10 @@ public interface RuntimeDataService {
      * @return Information about the variable with the given id in the specified process instance,
      *         represented by a list of {@link VariableDesc} instances.
      */
-    Collection<VariableDesc> getVariableHistory(long processInstanceId, String variableId, QueryContext queryContext);
+    Collection<VariableDesc> getVariableHistory(long processInstanceId,
+                                                String containerId,
+                                                String variableId,
+                                                QueryContext queryContext);
 
 
     // Process information
