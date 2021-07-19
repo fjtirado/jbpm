@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Red Hat, Inc. and/or its affiliates.
+ * Copyright 2021 Red Hat, Inc. and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,17 +31,12 @@ public class TaskOperationView implements InstanceView<TaskEvent> {
     private AssignmentType assignType;
     private String userId;
     
-    public TaskOperationView(TaskEvent taskOperation, TaskEventType type) {
-        this (taskOperation, type, null);
-    }
-    
-    public TaskOperationView(TaskEvent taskOperation, TaskEventType type, AssignmentType assignType) {
-        this.source = taskOperation;
+    public TaskOperationView(TaskEvent taskEvent, TaskEventType type, AssignmentType assignType) {
+        this.source = taskEvent;
         this.type = type;
         this.assignType = assignType;
     }
 
-  
     public TaskEventType getType() {
         return type;
     }
