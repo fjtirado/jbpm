@@ -60,6 +60,7 @@ public class TaskDeadlinesServiceImpl implements TaskDeadlinesService {
     private static final Logger logger = LoggerFactory.getLogger(TaskDeadlinesServiceImpl.class);
     // static instance so it can be used from background jobs
     protected static volatile CommandExecutor instance;
+    private static boolean started;
     
     protected static NotificationListener notificationListener;
 
@@ -454,17 +455,24 @@ public class TaskDeadlinesServiceImpl implements TaskDeadlinesService {
     public static synchronized void initialize(CommandExecutor instance) {
     	if (instance != null) {
     	    TaskDeadlinesServiceImpl.instance = instance;
-	        getInstance().execute(new InitDeadlinesCommand());
     	}        
+    }
+    
+    public static synchronized void start() {
+        if (!started && getInstance() != null) {
+            getInstance().execute(new InitDeadlinesCommand());
+            started = true;
+        }
     }
     
     public static synchronized void reset() {
     	dispose();
-        scheduler = new ScheduledThreadPoolExecutor(3);        
+        scheduler = new ScheduledThreadPoolExecutor(3);
     }
 
     public static synchronized void dispose() {
         try {
+            started = false;
             if (scheduler != null) {
                 scheduler.shutdownNow();
             }        

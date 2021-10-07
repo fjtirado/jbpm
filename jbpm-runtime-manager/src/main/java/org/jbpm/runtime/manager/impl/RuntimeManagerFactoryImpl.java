@@ -25,6 +25,7 @@ import org.jbpm.runtime.manager.impl.factory.JPASessionFactory;
 import org.jbpm.runtime.manager.impl.factory.LocalTaskServiceFactory;
 import org.jbpm.runtime.manager.impl.tx.NoTransactionalTimerResourcesCleanupAwareSchedulerServiceInterceptor;
 import org.jbpm.runtime.manager.impl.tx.TransactionAwareSchedulerServiceInterceptor;
+import org.jbpm.services.task.impl.TaskDeadlinesServiceImpl;
 import org.kie.api.runtime.manager.RuntimeEnvironment;
 import org.kie.api.runtime.manager.RuntimeManager;
 import org.kie.api.runtime.manager.RuntimeManagerFactory;
@@ -158,6 +159,7 @@ public class RuntimeManagerFactoryImpl implements RuntimeManagerFactory {
                 }
             }
         }
+        TaskDeadlinesServiceImpl.start();
     }
     
 
