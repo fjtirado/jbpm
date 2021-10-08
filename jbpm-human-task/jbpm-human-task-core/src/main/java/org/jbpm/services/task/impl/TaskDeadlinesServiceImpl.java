@@ -90,6 +90,12 @@ public class TaskDeadlinesServiceImpl implements TaskDeadlinesService {
         String deploymentId = task.getTaskData().getDeploymentId();
 
         TimerService timerService = TimerServiceRegistry.getInstance().get(deploymentId + TimerServiceRegistry.TIMER_SERVICE_SUFFIX);
+        logger.debug("deploymentId: "+ deploymentId + "\ntimerService: "+ timerService + "\ntaskId:"+ taskId + "\ndeadlineId: "+deadlineId +  "\ndelay: "+ delay + "\ntype: "+ type+"\n");
+        try {
+           throw new Exception("call stack");
+        } catch (Exception e) {
+            logger.trace("call stack: ", e);
+        }
         if (timerService != null && timerService instanceof GlobalTimerService) {
             TaskDeadlineJob deadlineJob = new TaskDeadlineJob(taskId, deadlineId, type, deploymentId, task.getTaskData().getProcessInstanceId());
             Trigger trigger = new IntervalTrigger( timerService.getCurrentTime(),
@@ -105,6 +111,7 @@ public class TaskDeadlinesServiceImpl implements TaskDeadlinesService {
             jobHandles.put(deadlineJob.getId(), handle);
 
         } else {
+            logger.debug( "scheduling timer job with future: task {}", taskId);
             ScheduledFuture<ScheduledTaskDeadline> scheduled = scheduler.schedule(new ScheduledTaskDeadline(taskId, deadlineId, type, deploymentId, task.getTaskData().getProcessInstanceId()), delay, TimeUnit.MILLISECONDS);
             
             List<ScheduledFuture<ScheduledTaskDeadline>> knownFutures = null;
